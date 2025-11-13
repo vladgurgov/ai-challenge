@@ -96,6 +96,48 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Check if text is JSON
+function isJSON(text) {
+    try {
+        const trimmed = text.trim();
+        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+            JSON.parse(trimmed);
+            return true;
+        }
+    } catch (e) {
+        return false;
+    }
+    return false;
+}
+
+// Format JSON with syntax highlighting
+function formatJSON(jsonString) {
+    const obj = JSON.parse(jsonString.trim());
+    const formatted = JSON.stringify(obj, null, 2);
+    
+    // Add syntax highlighting
+    return formatted
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+}
+
 // Add message to chat
 function addMessage(text, type, provider = null) {
     const messageDiv = document.createElement('div');
@@ -107,7 +149,34 @@ function addMessage(text, type, provider = null) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.textContent = text;
+    
+    // Check if the message is JSON and format it nicely
+    if (type === 'ai' && isJSON(text)) {
+        const jsonLabel = document.createElement('div');
+        jsonLabel.className = 'json-label';
+        jsonLabel.textContent = '📋 JSON Response';
+        contentDiv.appendChild(jsonLabel);
+        
+        const jsonContainer = document.createElement('pre');
+        jsonContainer.className = 'json-container';
+        jsonContainer.innerHTML = formatJSON(text);
+        contentDiv.appendChild(jsonContainer);
+        
+        // Add copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-json-btn';
+        copyBtn.textContent = '📋 Copy';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(text.trim());
+            copyBtn.textContent = '✓ Copied!';
+            setTimeout(() => {
+                copyBtn.textContent = '📋 Copy';
+            }, 2000);
+        };
+        contentDiv.appendChild(copyBtn);
+    } else {
+        contentDiv.textContent = text;
+    }
     
     if (provider && type === 'ai') {
         const meta = document.createElement('div');

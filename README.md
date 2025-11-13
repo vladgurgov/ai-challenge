@@ -10,6 +10,7 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 - ⚡ Real-time responses
 - 📱 Responsive design
 - 🎨 Beautiful gradient UI with smooth animations
+- 📋 **Automatic JSON detection and formatting** - JSON responses are automatically detected, syntax-highlighted, and displayed with a copy button
 
 ## Tech Stack
 

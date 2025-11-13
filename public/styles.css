@@ -304,6 +304,84 @@ button:disabled {
     font-weight: bold;
 }
 
+/* JSON Formatting */
+.json-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.json-container {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+.json-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.json-container::-webkit-scrollbar-track {
+    background: var(--surface-color);
+    border-radius: 3px;
+}
+
+.json-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+    color: #8b5cf6;
+    font-weight: 500;
+}
+
+.json-string {
+    color: #10b981;
+}
+
+.json-number {
+    color: #f59e0b;
+}
+
+.json-boolean {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.json-null {
+    color: #ef4444;
+    font-style: italic;
+}
+
+.copy-json-btn {
+    background: var(--border-color);
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-top: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.copy-json-btn:hover {
+    background: #475569;
+}
+
+.copy-json-btn:active {
+    transform: scale(0.95);
+}
+
 @media (max-width: 768px) {
     .container {
         height: 100vh;
@@ -324,6 +402,11 @@ button:disabled {
     
     .message-content {
         max-width: 85%;
+    }
+    
+    .json-container {
+        font-size: 12px;
+        padding: 12px;
     }
 }
 
