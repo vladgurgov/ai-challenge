@@ -8,6 +8,8 @@ const statusText = document.getElementById('statusText');
 
 // State
 let isProcessing = false;
+let planMode = false;
+let conversationHistory = [];
 
 // Check server health on load
 async function checkHealth() {
@@ -45,6 +47,24 @@ chatForm.addEventListener('submit', async (e) => {
     const message = userInput.value.trim();
     if (!message || isProcessing) return;
     
+    // Check if user is activating plan mode
+    if (message.toLowerCase() === 'plan mode' && !planMode) {
+        planMode = true;
+        conversationHistory = [];
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        
+        // Remove welcome message if exists
+        const welcomeMessage = chatContainer.querySelector('.welcome-message');
+        if (welcomeMessage) {
+            welcomeMessage.remove();
+        }
+        
+        showPlanModeActivation();
+        updatePlanModeUI();
+        return;
+    }
+    
     // Clear input
     userInput.value = '';
     userInput.style.height = 'auto';
@@ -57,6 +77,14 @@ chatForm.addEventListener('submit', async (e) => {
     
     // Add user message
     addMessage(message, 'user');
+    
+    // Add to conversation history if in plan mode
+    if (planMode) {
+        conversationHistory.push({
+            role: 'user',
+            content: message
+        });
+    }
     
     // Add loading indicator
     const loadingDiv = addLoadingIndicator();
@@ -72,7 +100,11 @@ chatForm.addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ 
+                message,
+                conversationHistory,
+                planMode
+            })
         });
         
         const data = await response.json();
@@ -82,6 +114,19 @@ chatForm.addEventListener('submit', async (e) => {
         
         if (data.success) {
             addMessage(data.response, 'ai', data.provider);
+            
+            // Add to conversation history if in plan mode
+            if (planMode) {
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: data.response
+                });
+                
+                // Check if this is the final document
+                if (data.response.includes('📋 FINAL DOCUMENT:')) {
+                    showPlanModeComplete();
+                }
+            }
         } else {
             addErrorMessage(data.error || 'An error occurred');
         }
@@ -247,4 +292,66 @@ userInput.addEventListener('keydown', (e) => {
         chatForm.dispatchEvent(new Event('submit'));
     }
 });
+
+// Plan Mode UI Functions
+function showPlanModeActivation() {
+    const activationDiv = document.createElement('div');
+    activationDiv.className = 'plan-mode-activation';
+    activationDiv.innerHTML = `
+        <div class="plan-mode-icon">📋</div>
+        <h3>Plan Mode Activated</h3>
+        <p>I'll gather requirements through our conversation and produce a comprehensive final document when ready.</p>
+        <div class="plan-mode-steps">
+            <div class="step">1️⃣ Tell me about your needs</div>
+            <div class="step">2️⃣ I'll ask clarifying questions</div>
+            <div class="step">3️⃣ I'll produce a final document</div>
+        </div>
+    `;
+    chatContainer.appendChild(activationDiv);
+    scrollToBottom();
+}
+
+function showPlanModeComplete() {
+    setTimeout(() => {
+        const completeDiv = document.createElement('div');
+        completeDiv.className = 'plan-mode-complete';
+        completeDiv.innerHTML = `
+            <div class="complete-icon">✅</div>
+            <p><strong>Final document delivered!</strong></p>
+            <button class="exit-plan-mode-btn" onclick="exitPlanMode()">Exit Plan Mode</button>
+        `;
+        chatContainer.appendChild(completeDiv);
+        scrollToBottom();
+    }, 500);
+}
+
+function exitPlanMode() {
+    planMode = false;
+    conversationHistory = [];
+    updatePlanModeUI();
+    
+    const exitMsg = document.createElement('div');
+    exitMsg.className = 'plan-mode-exit';
+    exitMsg.innerHTML = `<p>👋 Exited Plan Mode. Send "Plan mode" to start again.</p>`;
+    chatContainer.appendChild(exitMsg);
+    scrollToBottom();
+}
+
+function updatePlanModeUI() {
+    const header = document.querySelector('header');
+    if (planMode) {
+        header.classList.add('plan-mode-active');
+        if (!document.getElementById('planModeBadge')) {
+            const badge = document.createElement('div');
+            badge.id = 'planModeBadge';
+            badge.className = 'plan-mode-badge';
+            badge.innerHTML = '📋 Plan Mode Active';
+            header.appendChild(badge);
+        }
+    } else {
+        header.classList.remove('plan-mode-active');
+        const badge = document.getElementById('planModeBadge');
+        if (badge) badge.remove();
+    }
+}
 

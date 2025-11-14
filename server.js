@@ -18,23 +18,45 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 // Function to call OpenAI API
-async function callOpenAI(message) {
+async function callOpenAI(message, conversationHistory = [], planMode = false) {
   try {
+    const systemPrompt = planMode 
+      ? `You are an expert requirements analyst and technical writer. Your goal is to gather information through conversation and produce a comprehensive final document.
+
+PROCESS:
+1. Ask clarifying questions to understand the user's needs
+2. Gather requirements, specifications, and details through natural conversation
+3. When you have sufficient information (typically after 3-5 exchanges), produce a final structured document
+4. Start your final document with "📋 FINAL DOCUMENT:" to indicate completion
+
+DOCUMENT FORMAT:
+Your final document should be well-structured with:
+- Clear sections and headers
+- Bullet points or numbered lists
+- Comprehensive coverage of all discussed points
+- Professional formatting
+
+CONSTRAINT: After producing the final document, you have completed your task. Keep conversations focused and efficient.`
+      : 'You are a helpful assistant that provides clear and concise answers.';
+
+    const messages = [
+      {
+        role: 'system',
+        content: systemPrompt
+      },
+      ...conversationHistory,
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that provides clear and concise answers.'
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        max_tokens: 500,
+        messages: messages,
+        max_tokens: planMode ? 2000 : 500,
         temperature: 0.7
       },
       {
@@ -93,7 +115,7 @@ async function callAnthropic(message) {
 
 // Main chat endpoint
 app.post('/api/chat', async (req, res) => {
-  const { message } = req.body;
+  const { message, conversationHistory = [], planMode = false } = req.body;
   
   if (!message || message.trim() === '') {
     return res.status(400).json({
@@ -120,7 +142,7 @@ app.post('/api/chat', async (req, res) => {
           error: 'OpenAI API key not configured'
         });
       }
-      result = await callOpenAI(message);
+      result = await callOpenAI(message, conversationHistory, planMode);
     }
     
     res.json(result);

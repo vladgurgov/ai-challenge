@@ -11,6 +11,7 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 - 📱 Responsive design
 - 🎨 Beautiful gradient UI with smooth animations
 - 📋 **Automatic JSON detection and formatting** - JSON responses are automatically detected, syntax-highlighted, and displayed with a copy button
+- 🎯 **Plan Mode** - Activate by typing "Plan mode" to have the AI gather requirements through conversation and automatically produce a comprehensive final document
 
 ## Tech Stack
 
@@ -77,6 +78,33 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
    
    Type your question in the input field and press Enter or click Send.
 
+## Plan Mode
+
+Plan Mode is a special feature that helps you create structured documents through conversation.
+
+### How to Use
+
+1. **Activate Plan Mode** - Type "Plan mode" and send it
+2. **Describe Your Needs** - Tell the AI what kind of document you need (e.g., "I need a technical specification for a mobile app")
+3. **Answer Questions** - The AI will ask clarifying questions to gather all necessary information
+4. **Receive Final Document** - After 3-5 exchanges, the AI will automatically produce a comprehensive, well-structured final document
+
+### Example Use Cases
+
+- **Technical Specifications**: Describe your project, and get a complete technical spec
+- **Project Plans**: Discuss your project goals, and receive a detailed project plan
+- **Requirements Documents**: Explain your needs, and get a formatted requirements doc
+- **Architecture Designs**: Describe your system, and get an architecture document
+
+### How It Works
+
+When in Plan Mode:
+- The AI maintains conversation context
+- It asks targeted questions to gather complete information
+- It knows when it has enough information to produce the final document
+- The final document is automatically marked with "📋 FINAL DOCUMENT:"
+- You can exit Plan Mode after receiving your document
+
 ## API Endpoints
 
 ### POST `/api/chat`
@@ -86,16 +114,23 @@ Send a message to the AI agent.
 **Request:**
 ```json
 {
-  "message": "What is the capital of France?"
+  "message": "What is the capital of France?",
+  "conversationHistory": [],
+  "planMode": false
 }
 ```
+
+**Request Parameters:**
+- `message` (required): The user's message
+- `conversationHistory` (optional): Array of previous messages for context (used in Plan Mode)
+- `planMode` (optional): Boolean to activate Plan Mode behavior
 
 **Response:**
 ```json
 {
   "success": true,
   "response": "The capital of France is Paris.",
-  "provider": "OpenAI GPT-3.5"
+  "provider": "OpenAI GPT-4o"
 }
 ```
 

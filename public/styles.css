@@ -382,6 +382,116 @@ button:disabled {
     transform: scale(0.95);
 }
 
+/* Plan Mode Styles */
+header.plan-mode-active {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+}
+
+.plan-mode-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+    animation: pulse 2s infinite;
+}
+
+.plan-mode-activation {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 2px solid #ec4899;
+    border-radius: 16px;
+    padding: 30px;
+    margin: 20px 0;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.plan-mode-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.plan-mode-activation h3 {
+    font-size: 24px;
+    color: #ec4899;
+    margin-bottom: 10px;
+}
+
+.plan-mode-activation p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.plan-mode-steps {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.plan-mode-steps .step {
+    background: var(--surface-color);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+}
+
+.plan-mode-complete {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 2px solid var(--success-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.complete-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.plan-mode-complete p {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.exit-plan-mode-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.exit-plan-mode-btn:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+}
+
+.exit-plan-mode-btn:active {
+    transform: scale(0.98);
+}
+
+.plan-mode-exit {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
     .container {
         height: 100vh;
