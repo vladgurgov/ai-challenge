@@ -10,6 +10,7 @@ const statusText = document.getElementById('statusText');
 let isProcessing = false;
 let planMode = false;
 let conversationHistory = [];
+let compareMode = false;
 
 // Check server health on load
 async function checkHealth() {
@@ -33,6 +34,29 @@ async function checkHealth() {
 
 // Initialize
 checkHealth();
+
+// Compare Mode Toggle
+const compareModeToggle = document.getElementById('compareModeToggle');
+const modeIndicator = document.getElementById('modeIndicator');
+
+compareModeToggle.addEventListener('click', () => {
+    compareMode = !compareMode;
+    updateCompareModeUI();
+});
+
+function updateCompareModeUI() {
+    if (compareMode) {
+        compareModeToggle.classList.add('active');
+        modeIndicator.textContent = '🌡️ Compare Mode';
+        modeIndicator.classList.add('active');
+        userInput.placeholder = 'Enter prompt to compare at different temperatures...';
+    } else {
+        compareModeToggle.classList.remove('active');
+        modeIndicator.textContent = 'Normal Mode';
+        modeIndicator.classList.remove('active');
+        userInput.placeholder = 'Type your question here...';
+    }
+}
 
 // Auto-resize textarea
 userInput.addEventListener('input', function() {
@@ -77,6 +101,46 @@ chatForm.addEventListener('submit', async (e) => {
     
     // Add user message
     addMessage(message, 'user');
+    
+    // Handle Compare Mode
+    if (compareMode) {
+        // Add loading indicator
+        const loadingDiv = addLoadingIndicator('Comparing temperatures (0, 0.7, 1.2)...');
+        
+        // Disable input while processing
+        isProcessing = true;
+        updateButtonState();
+        
+        try {
+            const response = await fetch('/api/compare-temperatures', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+            
+            const data = await response.json();
+            
+            // Remove loading indicator
+            loadingDiv.remove();
+            
+            if (data.success) {
+                showTemperatureComparison(data);
+            } else {
+                addErrorMessage(data.error || 'An error occurred');
+            }
+        } catch (error) {
+            loadingDiv.remove();
+            addErrorMessage('Failed to connect to server. Please try again.');
+            console.error('Error:', error);
+        } finally {
+            isProcessing = false;
+            updateButtonState();
+            userInput.focus();
+        }
+        return;
+    }
     
     // Add to conversation history if in plan mode
     if (planMode) {
@@ -238,7 +302,7 @@ function addMessage(text, type, provider = null) {
 }
 
 // Add loading indicator
-function addLoadingIndicator() {
+function addLoadingIndicator(customText = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message ai';
     messageDiv.id = 'loadingMessage';
@@ -249,6 +313,15 @@ function addLoadingIndicator() {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
+    
+    if (customText) {
+        const textDiv = document.createElement('div');
+        textDiv.textContent = customText;
+        textDiv.style.marginBottom = '8px';
+        textDiv.style.fontSize = '14px';
+        textDiv.style.color = 'var(--text-secondary)';
+        contentDiv.appendChild(textDiv);
+    }
     
     const loading = document.createElement('div');
     loading.className = 'loading';
@@ -353,5 +426,73 @@ function updatePlanModeUI() {
         const badge = document.getElementById('planModeBadge');
         if (badge) badge.remove();
     }
+}
+
+// Temperature Comparison Display
+function showTemperatureComparison(data) {
+    const comparisonDiv = document.createElement('div');
+    comparisonDiv.className = 'temperature-comparison';
+    
+    // Header
+    const header = document.createElement('div');
+    header.className = 'comparison-header';
+    header.innerHTML = `
+        <div class="comparison-title">
+            <span class="comparison-icon">🌡️</span>
+            <h3>Temperature Comparison Results</h3>
+        </div>
+        <div class="comparison-subtitle">Same prompt, different temperatures</div>
+    `;
+    comparisonDiv.appendChild(header);
+    
+    // Results Grid
+    const resultsGrid = document.createElement('div');
+    resultsGrid.className = 'comparison-grid';
+    
+    data.results.forEach(result => {
+        const resultCard = document.createElement('div');
+        resultCard.className = 'comparison-card';
+        
+        const tempValue = result.temperature === 0 ? '0' : result.temperature === 0.7 ? '0.7' : '1.2';
+        const colorClass = result.temperature === 0 ? 'temp-low' : result.temperature === 0.7 ? 'temp-medium' : 'temp-high';
+        
+        resultCard.innerHTML = `
+            <div class="temp-header ${colorClass}">
+                <div class="temp-value">Temperature: ${tempValue}</div>
+                <div class="temp-label">${result.temperature === 0 ? '❄️ Cold' : result.temperature === 0.7 ? '⚖️ Balanced' : '🔥 Hot'}</div>
+            </div>
+            <div class="temp-characteristics">${result.characteristics}</div>
+            <div class="temp-response">${result.response}</div>
+        `;
+        
+        resultsGrid.appendChild(resultCard);
+    });
+    
+    comparisonDiv.appendChild(resultsGrid);
+    
+    // Analysis Section
+    const analysisDiv = document.createElement('div');
+    analysisDiv.className = 'comparison-analysis';
+    analysisDiv.innerHTML = `
+        <h4>📊 Understanding Temperature Settings</h4>
+        <div class="analysis-grid">
+            <div class="analysis-item">
+                <strong>Temperature 0 (❄️)</strong>
+                <p>Deterministic and consistent. Best for: factual questions, math problems, code generation, technical documentation.</p>
+            </div>
+            <div class="analysis-item">
+                <strong>Temperature 0.7 (⚖️)</strong>
+                <p>Balanced approach. Best for: general conversation, explanations, creative writing with structure, Q&A.</p>
+            </div>
+            <div class="analysis-item">
+                <strong>Temperature 1.2 (🔥)</strong>
+                <p>Creative and diverse. Best for: brainstorming, storytelling, poetry, exploring different perspectives.</p>
+            </div>
+        </div>
+    `;
+    comparisonDiv.appendChild(analysisDiv);
+    
+    chatContainer.appendChild(comparisonDiv);
+    scrollToBottom();
 }
 

@@ -241,6 +241,49 @@ h1 {
     border-top: 1px solid var(--border-color);
 }
 
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.mode-toggle-btn {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.mode-toggle-btn:hover {
+    border-color: var(--primary-color);
+    background: var(--border-color);
+}
+
+.mode-toggle-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.toggle-icon {
+    font-size: 16px;
+}
+
+.mode-indicator {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.mode-indicator.active {
+    color: var(--primary-color);
+}
+
 #chatForm {
     display: flex;
     gap: 12px;
@@ -492,6 +535,149 @@ header.plan-mode-active {
     color: var(--text-secondary);
 }
 
+/* Temperature Comparison Styles */
+.temperature-comparison {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.comparison-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.comparison-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.comparison-icon {
+    font-size: 32px;
+}
+
+.comparison-title h3 {
+    font-size: 24px;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.comparison-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.comparison-card {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.comparison-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.temp-header {
+    padding: 16px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.temp-header.temp-low {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%);
+    border-bottom: 2px solid #3b82f6;
+}
+
+.temp-header.temp-medium {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    border-bottom: 2px solid #a855f7;
+}
+
+.temp-header.temp-high {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+    border-bottom: 2px solid #ef4444;
+}
+
+.temp-value {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.temp-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.temp-characteristics {
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.temp-response {
+    padding: 16px;
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.comparison-analysis {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.comparison-analysis h4 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.analysis-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.analysis-item {
+    background: var(--surface-color);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.analysis-item strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.analysis-item p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
     .container {
         height: 100vh;
@@ -517,6 +703,18 @@ header.plan-mode-active {
     .json-container {
         font-size: 12px;
         padding: 12px;
+    }
+    
+    .comparison-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison-title h3 {
+        font-size: 20px;
+    }
+    
+    .temperature-comparison {
+        padding: 16px;
     }
 }
 

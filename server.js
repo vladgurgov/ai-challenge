@@ -154,6 +154,87 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// Temperature comparison endpoint
+app.post('/api/compare-temperatures', async (req, res) => {
+  const { message } = req.body;
+  
+  if (!message || message.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      error: 'Message is required'
+    });
+  }
+  
+  if (AI_PROVIDER !== 'openai') {
+    return res.status(400).json({
+      success: false,
+      error: 'Temperature comparison is only available with OpenAI provider'
+    });
+  }
+  
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({
+      success: false,
+      error: 'OpenAI API key not configured'
+    });
+  }
+  
+  try {
+    // Run the same prompt with three different temperatures in parallel
+    const temperatures = [0, 0.7, 1.2];
+    
+    const promises = temperatures.map(temp => 
+      axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful assistant that provides clear and concise answers.'
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          max_tokens: 500,
+          temperature: temp
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+          }
+        }
+      ).then(response => ({
+        temperature: temp,
+        response: response.data.choices[0].message.content,
+        characteristics: temp === 0 
+          ? 'Deterministic & Focused - Best for factual, consistent answers'
+          : temp === 0.7 
+          ? 'Balanced - Good mix of accuracy and creativity'
+          : 'Creative & Diverse - Best for brainstorming and varied ideas'
+      }))
+    );
+    
+    const results = await Promise.all(promises);
+    
+    res.json({
+      success: true,
+      prompt: message,
+      results: results,
+      provider: 'OpenAI GPT-4o'
+    });
+  } catch (error) {
+    console.error('Temperature Comparison Error:', error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      error: error.response?.data?.error?.message || 'Failed to compare temperatures'
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({

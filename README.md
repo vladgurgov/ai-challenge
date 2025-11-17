@@ -12,6 +12,7 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 - 🎨 Beautiful gradient UI with smooth animations
 - 📋 **Automatic JSON detection and formatting** - JSON responses are automatically detected, syntax-highlighted, and displayed with a copy button
 - 🎯 **Plan Mode** - Activate by typing "Plan mode" to have the AI gather requirements through conversation and automatically produce a comprehensive final document
+- 🌡️ **Temperature Comparison Mode** - Compare AI responses at different temperature settings (0, 0.7, 1.2) side-by-side to understand how creativity vs. determinism affects outputs
 
 ## Tech Stack
 
@@ -105,6 +106,42 @@ When in Plan Mode:
 - The final document is automatically marked with "📋 FINAL DOCUMENT:"
 - You can exit Plan Mode after receiving your document
 
+## Temperature Comparison Mode
+
+Explore how temperature settings affect AI responses by comparing outputs side-by-side.
+
+### How to Use
+
+1. **Toggle Compare Mode** - Click the "🌡️ Compare Temperatures" button at the bottom
+2. **Enter Your Prompt** - Type any question or prompt
+3. **View Results** - See three responses generated with different temperatures:
+   - **Temperature 0** (❄️ Cold) - Deterministic and focused
+   - **Temperature 0.7** (⚖️ Balanced) - Mix of accuracy and creativity
+   - **Temperature 1.2** (🔥 Hot) - Creative and diverse
+
+### Understanding Temperature
+
+**Temperature** controls the randomness of the AI's responses:
+
+- **0 (Deterministic)**: Always picks the most likely next word
+  - Best for: Math problems, code generation, factual answers, technical docs
+  - Output: Consistent, precise, focused
+  
+- **0.7 (Balanced)**: Good mix of predictability and variety
+  - Best for: General conversation, explanations, Q&A, structured creative writing
+  - Output: Natural, reliable with some variation
+  
+- **1.2 (Creative)**: More random, explores diverse possibilities
+  - Best for: Brainstorming, storytelling, poetry, multiple perspectives
+  - Output: Varied, imaginative, unexpected
+
+### Example Prompts to Try
+
+- "Write a short story about a robot" (See creativity differences)
+- "What is 2+2?" (See consistency at different temperatures)
+- "Explain quantum physics" (Compare accuracy vs. creativity)
+- "Generate 5 business name ideas" (Observe diversity)
+
 ## API Endpoints
 
 ### POST `/api/chat`
@@ -130,6 +167,43 @@ Send a message to the AI agent.
 {
   "success": true,
   "response": "The capital of France is Paris.",
+  "provider": "OpenAI GPT-4o"
+}
+```
+
+### POST `/api/compare-temperatures`
+
+Compare the same prompt at three different temperature settings.
+
+**Request:**
+```json
+{
+  "message": "Write a haiku about coding"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "prompt": "Write a haiku about coding",
+  "results": [
+    {
+      "temperature": 0,
+      "response": "Code flows line by line...",
+      "characteristics": "Deterministic & Focused - Best for factual, consistent answers"
+    },
+    {
+      "temperature": 0.7,
+      "response": "Keys tap through the night...",
+      "characteristics": "Balanced - Good mix of accuracy and creativity"
+    },
+    {
+      "temperature": 1.2,
+      "response": "Logic dances wild...",
+      "characteristics": "Creative & Diverse - Best for brainstorming and varied ideas"
+    }
+  ],
   "provider": "OpenAI GPT-4o"
 }
 ```
