@@ -13,6 +13,8 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 - 📋 **Automatic JSON detection and formatting** - JSON responses are automatically detected, syntax-highlighted, and displayed with a copy button
 - 🎯 **Plan Mode** - Activate by typing "Plan mode" to have the AI gather requirements through conversation and automatically produce a comprehensive final document
 - 🌡️ **Temperature Comparison Mode** - Compare AI responses at different temperature settings (0, 0.7, 1.2) side-by-side to understand how creativity vs. determinism affects outputs
+- 📊 **Token Counting & Monitoring** - Real-time token usage tracking for both requests and responses with visual indicators and percentage bars
+- 🧪 **Token Limit Testing** - Automated testing suite that demonstrates model behavior with short prompts, long prompts, and context-limit-exceeding prompts
 
 ## Tech Stack
 
@@ -142,6 +144,62 @@ Explore how temperature settings affect AI responses by comparing outputs side-b
 - "Explain quantum physics" (Compare accuracy vs. creativity)
 - "Generate 5 business name ideas" (Observe diversity)
 
+## Token Counting & Monitoring
+
+Every AI response includes real-time token usage tracking to help you understand and optimize API costs.
+
+### Token Usage Display
+
+Each AI response shows:
+- **Input Tokens** (↑) - Tokens in your prompt
+- **Output Tokens** (↓) - Tokens in AI's response
+- **Total Tokens** - Sum of input + output
+- **Visual Progress Bar** - Color-coded by usage percentage:
+  - 🟢 Green (< 5%) - Low usage, very efficient
+  - 🟡 Orange (5-25%) - Medium usage
+  - 🔴 Red (> 25%) - High usage
+- **Percentage** - % of model's context limit used
+
+### Token Limit Testing
+
+Click the **"📊 Test Token Limits"** button to run three automated tests:
+
+#### Test 1: Short Prompt
+- **Prompt**: "What is 2+2?"
+- **Tokens**: ~5-10 tokens
+- **Behavior**: Fast response, minimal usage, cost-effective
+- **Best for**: Simple queries, quick answers, factual questions
+
+#### Test 2: Long Prompt  
+- **Prompt**: Comprehensive AI analysis request (~300 tokens)
+- **Tokens**: ~300-400 tokens
+- **Behavior**: Slower response, detailed output, higher cost
+- **Best for**: Complex questions, detailed analysis, comprehensive answers
+
+#### Test 3: Context Limit Exceeded
+- **Prompt**: Artificially large prompt (~10,000+ tokens)
+- **Tokens**: Exceeds 128,000 token limit
+- **Behavior**: ❌ Error - "Input exceeds context limit"
+- **Demonstrates**: How the system handles oversized inputs
+
+### Understanding Token Costs
+
+**GPT-4o Pricing** (example):
+- Input: $2.50 per 1M tokens
+- Output: $10 per 1M tokens
+
+**Example Costs:**
+- Short prompt (10 + 20 tokens): $0.00025
+- Long prompt (300 + 400 tokens): $0.0075
+- Average conversation (50 + 100 tokens): $0.0015
+
+### Context Limits by Model
+
+- **GPT-4o**: 128,000 tokens (~96,000 words)
+- **GPT-4-turbo**: 128,000 tokens
+- **GPT-4**: 8,192 tokens (~6,000 words)
+- **GPT-3.5-turbo**: 16,385 tokens (~12,000 words)
+
 ## API Endpoints
 
 ### POST `/api/chat`
@@ -167,7 +225,14 @@ Send a message to the AI agent.
 {
   "success": true,
   "response": "The capital of France is Paris.",
-  "provider": "OpenAI GPT-4o"
+  "provider": "OpenAI GPT-4o",
+  "tokenUsage": {
+    "input": 12,
+    "output": 8,
+    "total": 20,
+    "limit": 128000,
+    "percentUsed": "0.02"
+  }
 }
 ```
 
@@ -204,6 +269,42 @@ Compare the same prompt at three different temperature settings.
       "characteristics": "Creative & Diverse - Best for brainstorming and varied ideas"
     }
   ],
+  "provider": "OpenAI GPT-4o"
+}
+```
+
+### POST `/api/test-tokens`
+
+Run automated token limit tests with three different prompt lengths.
+
+**Request:**
+```json
+{}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "name": "Short Prompt",
+      "description": "A brief question that uses minimal tokens",
+      "prompt": "What is 2+2?",
+      "status": "success",
+      "response": "2+2 equals 4.",
+      "responseTime": 856,
+      "tokenUsage": {
+        "input": 8,
+        "output": 6,
+        "total": 14,
+        "limit": 128000,
+        "percentUsed": "0.01"
+      },
+      "expectedBehavior": "Fast response, minimal token usage, efficient"
+    }
+  ],
+  "modelLimit": 128000,
   "provider": "OpenAI GPT-4o"
 }
 ```

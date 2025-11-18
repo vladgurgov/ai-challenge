@@ -678,6 +678,271 @@ header.plan-mode-active {
     color: var(--text-secondary);
 }
 
+/* Token Usage Styles */
+.token-usage {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.token-stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.token-label {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.token-value {
+    padding: 2px 8px;
+    background: var(--surface-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+}
+
+.token-total {
+    padding: 2px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.token-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-color);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.token-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.token-bar.low {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.token-bar.medium {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.token-bar.high {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.token-percent {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+/* Token Test Results Styles */
+.token-test-results {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.test-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.test-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.test-icon {
+    font-size: 32px;
+}
+
+.test-title h3 {
+    font-size: 24px;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.test-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.test-cases {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.test-case {
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.test-case.error {
+    border-color: var(--error-color);
+}
+
+.test-case.success {
+    border-color: var(--success-color);
+}
+
+.test-case-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.test-number {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.test-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.test-status.status-success {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--success-color);
+}
+
+.test-status.status-error {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--error-color);
+}
+
+.test-case h4 {
+    margin: 0 0 8px 0;
+    color: var(--text-color);
+    font-size: 18px;
+}
+
+.test-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.test-prompt, .test-response, .test-error {
+    margin: 12px 0;
+}
+
+.test-prompt code {
+    display: block;
+    background: var(--surface-color);
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+.test-response p, .test-error p {
+    margin: 6px 0;
+    line-height: 1.6;
+}
+
+.test-timing {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+}
+
+.test-token-usage {
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--surface-color);
+    border-radius: 8px;
+}
+
+.test-token-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.test-behavior {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.test-analysis {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.test-analysis h4 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.learning-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.learning-item {
+    background: var(--surface-color);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.learning-item strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-color);
+}
+
+.learning-item p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
     .container {
         height: 100vh;

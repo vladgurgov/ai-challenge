@@ -37,11 +37,56 @@ checkHealth();
 
 // Compare Mode Toggle
 const compareModeToggle = document.getElementById('compareModeToggle');
+const tokenTestBtn = document.getElementById('tokenTestBtn');
 const modeIndicator = document.getElementById('modeIndicator');
 
 compareModeToggle.addEventListener('click', () => {
     compareMode = !compareMode;
     updateCompareModeUI();
+});
+
+// Token Test Button
+tokenTestBtn.addEventListener('click', async () => {
+    if (isProcessing) return;
+    
+    // Remove welcome message if exists
+    const welcomeMessage = chatContainer.querySelector('.welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+    }
+    
+    // Add loading indicator
+    const loadingDiv = addLoadingIndicator('Running token limit tests...');
+    isProcessing = true;
+    updateButtonState();
+    
+    try {
+        const response = await fetch('/api/test-tokens', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        
+        // Remove loading indicator
+        loadingDiv.remove();
+        
+        if (data.success) {
+            showTokenTestResults(data);
+        } else {
+            addErrorMessage(data.error || 'Failed to run token tests');
+        }
+    } catch (error) {
+        loadingDiv.remove();
+        addErrorMessage('Failed to connect to server. Please try again.');
+        console.error('Error:', error);
+    } finally {
+        isProcessing = false;
+        updateButtonState();
+    }
 });
 
 function updateCompareModeUI() {
@@ -177,7 +222,7 @@ chatForm.addEventListener('submit', async (e) => {
         loadingDiv.remove();
         
         if (data.success) {
-            addMessage(data.response, 'ai', data.provider);
+            addMessage(data.response, 'ai', data.provider, data.tokenUsage);
             
             // Add to conversation history if in plan mode
             if (planMode) {
@@ -248,7 +293,7 @@ function formatJSON(jsonString) {
 }
 
 // Add message to chat
-function addMessage(text, type, provider = null) {
+function addMessage(text, type, provider = null, tokenUsage = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
     
@@ -285,6 +330,28 @@ function addMessage(text, type, provider = null) {
         contentDiv.appendChild(copyBtn);
     } else {
         contentDiv.textContent = text;
+    }
+    
+    // Add token usage if available
+    if (tokenUsage && type === 'ai') {
+        const tokenDiv = document.createElement('div');
+        tokenDiv.className = 'token-usage';
+        
+        const percentClass = tokenUsage.percentUsed < 5 ? 'low' : tokenUsage.percentUsed < 25 ? 'medium' : 'high';
+        
+        tokenDiv.innerHTML = `
+            <div class="token-stats">
+                <span class="token-label">📊 Tokens:</span>
+                <span class="token-value">↑ ${tokenUsage.input}</span>
+                <span class="token-value">↓ ${tokenUsage.output}</span>
+                <span class="token-total">Total: ${tokenUsage.total}</span>
+            </div>
+            <div class="token-bar-container">
+                <div class="token-bar ${percentClass}" style="width: ${Math.min(tokenUsage.percentUsed, 100)}%"></div>
+            </div>
+            <div class="token-percent">${tokenUsage.percentUsed}% of ${tokenUsage.limit.toLocaleString()} token limit</div>
+        `;
+        contentDiv.appendChild(tokenDiv);
     }
     
     if (provider && type === 'ai') {
@@ -426,6 +493,112 @@ function updatePlanModeUI() {
         const badge = document.getElementById('planModeBadge');
         if (badge) badge.remove();
     }
+}
+
+// Token Test Results Display
+function showTokenTestResults(data) {
+    const testDiv = document.createElement('div');
+    testDiv.className = 'token-test-results';
+    
+    // Header
+    const header = document.createElement('div');
+    header.className = 'test-header';
+    header.innerHTML = `
+        <div class="test-title">
+            <span class="test-icon">📊</span>
+            <h3>Token Limit Testing Results</h3>
+        </div>
+        <div class="test-subtitle">Model: ${data.provider} | Context Limit: ${data.modelLimit.toLocaleString()} tokens</div>
+    `;
+    testDiv.appendChild(header);
+    
+    // Test Cases
+    const casesDiv = document.createElement('div');
+    casesDiv.className = 'test-cases';
+    
+    data.results.forEach((result, index) => {
+        const caseDiv = document.createElement('div');
+        caseDiv.className = `test-case ${result.status}`;
+        
+        const statusIcon = result.status === 'success' ? '✅' : '❌';
+        const statusClass = result.status === 'success' ? 'status-success' : 'status-error';
+        
+        let tokenBar = '';
+        if (result.tokenUsage) {
+            const percentClass = result.tokenUsage.percentUsed < 5 ? 'low' : result.tokenUsage.percentUsed < 25 ? 'medium' : 'high';
+            tokenBar = `
+                <div class="test-token-usage">
+                    <div class="test-token-stats">
+                        <span>Input: ${result.tokenUsage.input.toLocaleString()}</span>
+                        <span>Output: ${result.tokenUsage.output.toLocaleString()}</span>
+                        <span><strong>Total: ${result.tokenUsage.total.toLocaleString()}</strong></span>
+                    </div>
+                    <div class="token-bar-container">
+                        <div class="token-bar ${percentClass}" style="width: ${Math.min(result.tokenUsage.percentUsed, 100)}%"></div>
+                    </div>
+                    <div class="token-percent">${result.tokenUsage.percentUsed}% of context limit</div>
+                </div>
+            `;
+        }
+        
+        caseDiv.innerHTML = `
+            <div class="test-case-header">
+                <span class="test-number">Test ${index + 1}</span>
+                <span class="test-status ${statusClass}">${statusIcon} ${result.status.toUpperCase()}</span>
+            </div>
+            <h4>${result.name}</h4>
+            <p class="test-description">${result.description}</p>
+            <div class="test-prompt">
+                <strong>Prompt:</strong>
+                <code>${result.prompt}</code>
+            </div>
+            ${result.status === 'success' ? `
+                <div class="test-response">
+                    <strong>Response:</strong>
+                    <p>${result.response}</p>
+                    <div class="test-timing">⏱️ Response Time: ${result.responseTime}ms</div>
+                </div>
+            ` : `
+                <div class="test-error">
+                    <strong>Error:</strong>
+                    <p>${result.error}</p>
+                </div>
+            `}
+            ${tokenBar}
+            <div class="test-behavior">
+                <strong>Expected Behavior:</strong> ${result.expectedBehavior}
+            </div>
+        `;
+        
+        casesDiv.appendChild(caseDiv);
+    });
+    
+    testDiv.appendChild(casesDiv);
+    
+    // Analysis
+    const analysisDiv = document.createElement('div');
+    analysisDiv.className = 'test-analysis';
+    analysisDiv.innerHTML = `
+        <h4>📚 Key Learnings</h4>
+        <div class="learning-grid">
+            <div class="learning-item">
+                <strong>Short Prompts</strong>
+                <p>Use minimal tokens, respond quickly, and are cost-effective. Best for simple queries where context isn't needed.</p>
+            </div>
+            <div class="learning-item">
+                <strong>Long Prompts</strong>
+                <p>Consume more tokens and take longer to process, but provide richer context leading to more detailed responses.</p>
+            </div>
+            <div class="learning-item">
+                <strong>Context Limits</strong>
+                <p>Exceeding the model's context window (${data.modelLimit.toLocaleString()} tokens for GPT-4o) results in errors. Always monitor token usage.</p>
+            </div>
+        </div>
+    `;
+    testDiv.appendChild(analysisDiv);
+    
+    chatContainer.appendChild(testDiv);
+    scrollToBottom();
 }
 
 // Temperature Comparison Display

@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const path = require('path');
+const { encode } = require('gpt-tokenizer');
 require('dotenv').config();
 
 const app = express();
@@ -16,6 +17,25 @@ app.use(express.static('public'));
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+// Token counting function
+function countTokens(text) {
+  try {
+    const tokens = encode(text);
+    return tokens.length;
+  } catch (error) {
+    console.error('Token counting error:', error);
+    return 0;
+  }
+}
+
+// Model context limits
+const MODEL_LIMITS = {
+  'gpt-4o': 128000,
+  'gpt-4-turbo': 128000,
+  'gpt-4': 8192,
+  'gpt-3.5-turbo': 16385
+};
 
 // Function to call OpenAI API
 async function callOpenAI(message, conversationHistory = [], planMode = false) {
@@ -51,6 +71,16 @@ CONSTRAINT: After producing the final document, you have completed your task. Ke
       }
     ];
 
+    // Count input tokens
+    const fullPrompt = messages.map(m => m.content).join(' ');
+    const inputTokens = countTokens(fullPrompt);
+    const modelLimit = MODEL_LIMITS['gpt-4o'];
+    
+    // Check if we're approaching or exceeding the limit
+    if (inputTokens > modelLimit) {
+      throw new Error(`Input tokens (${inputTokens}) exceed model context limit (${modelLimit}). Please use a shorter prompt.`);
+    }
+    
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
@@ -67,10 +97,20 @@ CONSTRAINT: After producing the final document, you have completed your task. Ke
       }
     );
     
+    const responseText = response.data.choices[0].message.content;
+    const outputTokens = countTokens(responseText);
+    
     return {
       success: true,
-      response: response.data.choices[0].message.content,
-      provider: 'OpenAI GPT-4o'
+      response: responseText,
+      provider: 'OpenAI GPT-4o',
+      tokenUsage: {
+        input: inputTokens,
+        output: outputTokens,
+        total: inputTokens + outputTokens,
+        limit: modelLimit,
+        percentUsed: ((inputTokens + outputTokens) / modelLimit * 100).toFixed(2)
+      }
     };
   } catch (error) {
     console.error('OpenAI API Error:', error.response?.data || error.message);
@@ -150,6 +190,153 @@ app.post('/api/chat', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+// Token testing endpoint
+app.post('/api/test-tokens', async (req, res) => {
+  if (AI_PROVIDER !== 'openai') {
+    return res.status(400).json({
+      success: false,
+      error: 'Token testing is only available with OpenAI provider'
+    });
+  }
+  
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({
+      success: false,
+      error: 'OpenAI API key not configured'
+    });
+  }
+  
+  try {
+    const testCases = [
+      {
+        name: 'Short Prompt',
+        description: 'A brief question that uses minimal tokens',
+        prompt: 'What is 2+2?',
+        expectedBehavior: 'Fast response, minimal token usage, efficient'
+      },
+      {
+        name: 'Long Prompt',
+        description: 'A detailed prompt that uses significant tokens',
+        prompt: `Please provide a comprehensive analysis of artificial intelligence, covering the following topics in detail:
+1. The history and evolution of AI from the 1950s to present day
+2. Different types of AI including narrow AI, general AI, and superintelligence
+3. Current applications of AI in various industries such as healthcare, finance, transportation, and entertainment
+4. The underlying technologies including machine learning, deep learning, neural networks, and natural language processing
+5. Ethical considerations and challenges including bias, privacy, job displacement, and safety concerns
+6. Future prospects and potential developments in the field
+7. The role of AI in solving global challenges like climate change and disease
+Please be thorough and provide examples for each section.`,
+        expectedBehavior: 'Slower response, higher token usage, more detailed'
+      },
+      {
+        name: 'Context Limit Test',
+        description: 'A prompt designed to test context limits',
+        prompt: 'Repeat this word 50,000 times: "artificial"' + ' artificial'.repeat(10000),
+        expectedBehavior: 'Should trigger context limit error'
+      }
+    ];
+    
+    const results = [];
+    
+    for (const testCase of testCases) {
+      try {
+        const inputTokens = countTokens(testCase.prompt);
+        const modelLimit = MODEL_LIMITS['gpt-4o'];
+        
+        // Check if prompt exceeds limit
+        if (inputTokens > modelLimit) {
+          results.push({
+            name: testCase.name,
+            description: testCase.description,
+            prompt: testCase.prompt.substring(0, 200) + '...',
+            status: 'error',
+            error: `Input exceeds context limit (${inputTokens} > ${modelLimit} tokens)`,
+            tokenUsage: {
+              input: inputTokens,
+              output: 0,
+              total: inputTokens,
+              limit: modelLimit,
+              percentUsed: ((inputTokens / modelLimit) * 100).toFixed(2)
+            },
+            expectedBehavior: testCase.expectedBehavior
+          });
+          continue;
+        }
+        
+        // Make the API call
+        const startTime = Date.now();
+        const response = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a helpful assistant.'
+              },
+              {
+                role: 'user',
+                content: testCase.prompt
+              }
+            ],
+            max_tokens: 500,
+            temperature: 0.7
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+          }
+        );
+        const responseTime = Date.now() - startTime;
+        
+        const responseText = response.data.choices[0].message.content;
+        const outputTokens = countTokens(responseText);
+        
+        results.push({
+          name: testCase.name,
+          description: testCase.description,
+          prompt: testCase.prompt.substring(0, 200) + (testCase.prompt.length > 200 ? '...' : ''),
+          status: 'success',
+          response: responseText.substring(0, 300) + (responseText.length > 300 ? '...' : ''),
+          responseTime: responseTime,
+          tokenUsage: {
+            input: inputTokens,
+            output: outputTokens,
+            total: inputTokens + outputTokens,
+            limit: modelLimit,
+            percentUsed: ((inputTokens + outputTokens) / modelLimit * 100).toFixed(2)
+          },
+          expectedBehavior: testCase.expectedBehavior
+        });
+      } catch (error) {
+        results.push({
+          name: testCase.name,
+          description: testCase.description,
+          prompt: testCase.prompt.substring(0, 200) + '...',
+          status: 'error',
+          error: error.message,
+          expectedBehavior: testCase.expectedBehavior
+        });
+      }
+    }
+    
+    res.json({
+      success: true,
+      results: results,
+      modelLimit: MODEL_LIMITS['gpt-4o'],
+      provider: 'OpenAI GPT-4o'
+    });
+  } catch (error) {
+    console.error('Token Testing Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to perform token testing'
     });
   }
 });
