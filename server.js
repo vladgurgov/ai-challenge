@@ -204,6 +204,8 @@ app.post('/api/chat', async (req, res) => {
 
 // Token testing endpoint
 app.post('/api/test-tokens', async (req, res) => {
+  const { model = 'gpt-4o' } = req.body;
+  
   if (AI_PROVIDER !== 'openai') {
     return res.status(400).json({
       success: false,
@@ -218,7 +220,18 @@ app.post('/api/test-tokens', async (req, res) => {
     });
   }
   
+  const modelLimit = MODEL_LIMITS[model] || MODEL_LIMITS['gpt-4o'];
+  const modelNames = {
+    'gpt-4o': 'GPT-4o',
+    'gpt-4-turbo': 'GPT-4 Turbo',
+    'gpt-4': 'GPT-4',
+    'gpt-3.5-turbo': 'GPT-3.5 Turbo'
+  };
+  
   try {
+    // Generate a prompt that exceeds the selected model's limit
+    const limitExceedingTokens = Math.floor(modelLimit * 1.1); // 110% of limit
+    
     const testCases = [
       {
         name: 'Short Prompt',
@@ -242,9 +255,9 @@ Please be thorough and provide examples for each section.`,
       },
       {
         name: 'Context Limit Test',
-        description: 'A prompt designed to exceed context limits',
-        prompt: 'Repeat the word "context" many times: ' + 'context '.repeat(130000),
-        expectedBehavior: 'Should trigger context limit error and be rejected before API call'
+        description: `A prompt designed to exceed ${modelNames[model] || model}'s context limit (${modelLimit.toLocaleString()} tokens)`,
+        prompt: 'Repeat the word "limit" many times: ' + 'limit '.repeat(limitExceedingTokens),
+        expectedBehavior: `Should trigger context limit error for ${modelNames[model] || model} and be rejected before API call`
       }
     ];
     
@@ -253,7 +266,6 @@ Please be thorough and provide examples for each section.`,
     for (const testCase of testCases) {
       try {
         const inputTokens = countTokens(testCase.prompt);
-        const modelLimit = MODEL_LIMITS['gpt-4o'];
         
         // Check if prompt exceeds limit
         if (inputTokens > modelLimit) {
@@ -262,7 +274,7 @@ Please be thorough and provide examples for each section.`,
             description: testCase.description,
             prompt: testCase.prompt.substring(0, 200) + '...',
             status: 'error',
-            error: `Input exceeds context limit (${inputTokens} > ${modelLimit} tokens)`,
+            error: `Input exceeds context limit (${inputTokens.toLocaleString()} > ${modelLimit.toLocaleString()} tokens)`,
             tokenUsage: {
               input: inputTokens,
               output: 0,
@@ -280,7 +292,7 @@ Please be thorough and provide examples for each section.`,
         const response = await axios.post(
           'https://api.openai.com/v1/chat/completions',
           {
-            model: 'gpt-4o',
+            model: model,
             messages: [
               {
                 role: 'system',
@@ -337,8 +349,8 @@ Please be thorough and provide examples for each section.`,
     res.json({
       success: true,
       results: results,
-      modelLimit: MODEL_LIMITS['gpt-4o'],
-      provider: 'OpenAI GPT-4o'
+      modelLimit: modelLimit,
+      provider: `OpenAI ${modelNames[model] || model}`
     });
   } catch (error) {
     console.error('Token Testing Error:', error);

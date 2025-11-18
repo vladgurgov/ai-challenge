@@ -57,7 +57,8 @@ tokenTestBtn.addEventListener('click', async () => {
     }
     
     // Add loading indicator
-    const loadingDiv = addLoadingIndicator('Running token limit tests...');
+    const selectedModel = modelSelect.value;
+    const loadingDiv = addLoadingIndicator(`Running token limit tests with ${selectedModel}...`);
     isProcessing = true;
     updateButtonState();
     
@@ -67,7 +68,7 @@ tokenTestBtn.addEventListener('click', async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({ model: selectedModel })
         });
         
         const data = await response.json();

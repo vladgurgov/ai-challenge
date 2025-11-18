@@ -208,7 +208,7 @@ Each AI response shows:
 
 ### Token Limit Testing
 
-Click the **"📊 Test Token Limits"** button to run three automated tests:
+Click the **"📊 Test Token Limits"** button to run three automated tests using the **currently selected model**.
 
 #### Test 1: Short Prompt
 - **Prompt**: "What is 2+2?"
@@ -223,10 +223,15 @@ Click the **"📊 Test Token Limits"** button to run three automated tests:
 - **Best for**: Complex questions, detailed analysis, comprehensive answers
 
 #### Test 3: Context Limit Exceeded
-- **Prompt**: Artificially large prompt (~130,000 tokens)
-- **Tokens**: Exceeds 128,000 token limit for GPT-4o
+- **Prompt**: Artificially large prompt (110% of selected model's limit)
+- **Tokens**: Dynamically generated to exceed selected model's limit:
+  - GPT-4o/4-turbo: ~140,800 tokens (exceeds 128K)
+  - GPT-3.5 Turbo: ~18,024 tokens (exceeds 16K)
+  - GPT-4: ~9,011 tokens (exceeds 8K)
 - **Behavior**: ❌ Error - "Input exceeds context limit"
 - **Demonstrates**: How the system validates and rejects oversized inputs before making API calls
+
+**Note**: Tests automatically adapt to your selected model's context limit, so you can see how different models handle varying prompt sizes.
 
 ### Understanding Token Costs
 
