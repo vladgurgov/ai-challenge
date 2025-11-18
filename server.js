@@ -242,9 +242,9 @@ Please be thorough and provide examples for each section.`,
       },
       {
         name: 'Context Limit Test',
-        description: 'A prompt designed to test context limits',
-        prompt: 'Repeat this word 50,000 times: "artificial"' + ' artificial'.repeat(10000),
-        expectedBehavior: 'Should trigger context limit error'
+        description: 'A prompt designed to exceed context limits',
+        prompt: 'Repeat the word "context" many times: ' + 'context '.repeat(130000),
+        expectedBehavior: 'Should trigger context limit error and be rejected before API call'
       }
     ];
     

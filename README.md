@@ -223,10 +223,10 @@ Click the **"📊 Test Token Limits"** button to run three automated tests:
 - **Best for**: Complex questions, detailed analysis, comprehensive answers
 
 #### Test 3: Context Limit Exceeded
-- **Prompt**: Artificially large prompt (~10,000+ tokens)
-- **Tokens**: Exceeds 128,000 token limit
+- **Prompt**: Artificially large prompt (~130,000 tokens)
+- **Tokens**: Exceeds 128,000 token limit for GPT-4o
 - **Behavior**: ❌ Error - "Input exceeds context limit"
-- **Demonstrates**: How the system handles oversized inputs
+- **Demonstrates**: How the system validates and rejects oversized inputs before making API calls
 
 ### Understanding Token Costs
 
