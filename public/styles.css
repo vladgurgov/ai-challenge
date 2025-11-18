@@ -241,11 +241,54 @@ h1 {
     border-top: 1px solid var(--border-color);
 }
 
+.controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.model-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-selector label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.model-dropdown {
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.model-dropdown:hover {
+    border-color: var(--primary-color);
+}
+
+.model-dropdown:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
 .mode-toggle {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .mode-toggle-btn {
@@ -980,6 +1023,29 @@ header.plan-mode-active {
     
     .temperature-comparison {
         padding: 16px;
+    }
+    
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .model-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .model-dropdown {
+        flex: 1;
+    }
+    
+    .mode-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .mode-toggle-btn .toggle-text {
+        display: none;
     }
 }
 

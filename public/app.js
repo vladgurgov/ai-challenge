@@ -39,6 +39,7 @@ checkHealth();
 const compareModeToggle = document.getElementById('compareModeToggle');
 const tokenTestBtn = document.getElementById('tokenTestBtn');
 const modeIndicator = document.getElementById('modeIndicator');
+const modelSelect = document.getElementById('modelSelect');
 
 compareModeToggle.addEventListener('click', () => {
     compareMode = !compareMode;
@@ -157,12 +158,16 @@ chatForm.addEventListener('submit', async (e) => {
         updateButtonState();
         
         try {
+            const selectedModel = modelSelect.value;
             const response = await fetch('/api/compare-temperatures', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({ 
+                    message,
+                    model: selectedModel
+                })
             });
             
             const data = await response.json();
@@ -204,6 +209,7 @@ chatForm.addEventListener('submit', async (e) => {
     
     try {
         // Make API call
+        const selectedModel = modelSelect.value;
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -212,7 +218,8 @@ chatForm.addEventListener('submit', async (e) => {
             body: JSON.stringify({ 
                 message,
                 conversationHistory,
-                planMode
+                planMode,
+                model: selectedModel
             })
         });
         

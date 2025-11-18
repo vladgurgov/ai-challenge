@@ -26,16 +26,27 @@
         </div>
 
         <div class="input-container">
-            <div class="mode-toggle">
-                <button type="button" id="compareModeToggle" class="mode-toggle-btn">
-                    <span class="toggle-icon">🌡️</span>
-                    <span class="toggle-text">Compare Temperatures</span>
-                </button>
-                <button type="button" id="tokenTestBtn" class="mode-toggle-btn">
-                    <span class="toggle-icon">📊</span>
-                    <span class="toggle-text">Test Token Limits</span>
-                </button>
-                <div class="mode-indicator" id="modeIndicator">Normal Mode</div>
+            <div class="controls-row">
+                <div class="model-selector">
+                    <label for="modelSelect">🤖 Model:</label>
+                    <select id="modelSelect" class="model-dropdown">
+                        <option value="gpt-4o" selected>GPT-4o (128K)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo (128K)</option>
+                        <option value="gpt-4">GPT-4 (8K)</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (16K)</option>
+                    </select>
+                </div>
+                <div class="mode-toggle">
+                    <button type="button" id="compareModeToggle" class="mode-toggle-btn">
+                        <span class="toggle-icon">🌡️</span>
+                        <span class="toggle-text">Compare Temps</span>
+                    </button>
+                    <button type="button" id="tokenTestBtn" class="mode-toggle-btn">
+                        <span class="toggle-icon">📊</span>
+                        <span class="toggle-text">Test Tokens</span>
+                    </button>
+                    <div class="mode-indicator" id="modeIndicator">Normal Mode</div>
+                </div>
             </div>
             <form id="chatForm">
                 <textarea 

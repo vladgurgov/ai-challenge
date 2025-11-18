@@ -15,6 +15,7 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 - 🌡️ **Temperature Comparison Mode** - Compare AI responses at different temperature settings (0, 0.7, 1.2) side-by-side to understand how creativity vs. determinism affects outputs
 - 📊 **Token Counting & Monitoring** - Real-time token usage tracking for both requests and responses with visual indicators and percentage bars
 - 🧪 **Token Limit Testing** - Automated testing suite that demonstrates model behavior with short prompts, long prompts, and context-limit-exceeding prompts
+- 🔄 **Model Selection** - Choose from multiple ChatGPT models (GPT-4o, GPT-4 Turbo, GPT-4, GPT-3.5 Turbo) with automatic token limit adjustment
 
 ## Tech Stack
 
@@ -80,6 +81,51 @@ A simple, modern AI agent with a beautiful web interface that answers questions 
 3. **Start chatting!**
    
    Type your question in the input field and press Enter or click Send.
+
+## Model Selection
+
+Choose the ChatGPT model that best fits your needs using the dropdown selector at the bottom of the interface.
+
+### Available Models
+
+| Model | Context Limit | Best For | Speed | Cost |
+|-------|--------------|----------|-------|------|
+| **GPT-4o** | 128K tokens | Most capable, best overall performance | Fast | $$ |
+| **GPT-4 Turbo** | 128K tokens | Fast GPT-4 with large context | Fastest | $$ |
+| **GPT-4** | 8K tokens | High quality responses, smaller context | Medium | $$$ |
+| **GPT-3.5 Turbo** | 16K tokens | Fast, cost-effective, good for simple tasks | Fastest | $ |
+
+### Model Comparison
+
+**GPT-4o** (Default)
+- Latest and most capable model
+- Best reasoning and comprehension
+- Large 128K context window
+- Recommended for most use cases
+
+**GPT-4 Turbo**
+- Fast variant of GPT-4
+- Same 128K context as GPT-4o
+- Good balance of speed and quality
+
+**GPT-4**
+- Original GPT-4 model
+- Excellent quality but smaller 8K context
+- Higher cost per token
+- Best for tasks requiring highest quality in short contexts
+
+**GPT-3.5 Turbo**
+- Most cost-effective option
+- Fast responses
+- 16K context window
+- Great for simple questions, summaries, translations
+
+### Token Limits Auto-Adjust
+
+When you switch models, the token limit tracking automatically adjusts:
+- The progress bar reflects the selected model's context limit
+- Token percentage calculations update accordingly
+- Context limit errors are specific to the selected model
 
 ## Plan Mode
 

@@ -38,7 +38,7 @@ const MODEL_LIMITS = {
 };
 
 // Function to call OpenAI API
-async function callOpenAI(message, conversationHistory = [], planMode = false) {
+async function callOpenAI(message, conversationHistory = [], planMode = false, model = 'gpt-4o') {
   try {
     const systemPrompt = planMode 
       ? `You are an expert requirements analyst and technical writer. Your goal is to gather information through conversation and produce a comprehensive final document.
@@ -74,7 +74,7 @@ CONSTRAINT: After producing the final document, you have completed your task. Ke
     // Count input tokens
     const fullPrompt = messages.map(m => m.content).join(' ');
     const inputTokens = countTokens(fullPrompt);
-    const modelLimit = MODEL_LIMITS['gpt-4o'];
+    const modelLimit = MODEL_LIMITS[model] || MODEL_LIMITS['gpt-4o'];
     
     // Check if we're approaching or exceeding the limit
     if (inputTokens > modelLimit) {
@@ -84,7 +84,7 @@ CONSTRAINT: After producing the final document, you have completed your task. Ke
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-4o',
+        model: model,
         messages: messages,
         max_tokens: planMode ? 2000 : 500,
         temperature: 0.7
@@ -100,10 +100,18 @@ CONSTRAINT: After producing the final document, you have completed your task. Ke
     const responseText = response.data.choices[0].message.content;
     const outputTokens = countTokens(responseText);
     
+    // Get friendly model name
+    const modelNames = {
+      'gpt-4o': 'GPT-4o',
+      'gpt-4-turbo': 'GPT-4 Turbo',
+      'gpt-4': 'GPT-4',
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo'
+    };
+    
     return {
       success: true,
       response: responseText,
-      provider: 'OpenAI GPT-4o',
+      provider: `OpenAI ${modelNames[model] || model}`,
       tokenUsage: {
         input: inputTokens,
         output: outputTokens,
@@ -155,7 +163,7 @@ async function callAnthropic(message) {
 
 // Main chat endpoint
 app.post('/api/chat', async (req, res) => {
-  const { message, conversationHistory = [], planMode = false } = req.body;
+  const { message, conversationHistory = [], planMode = false, model = 'gpt-4o' } = req.body;
   
   if (!message || message.trim() === '') {
     return res.status(400).json({
@@ -182,7 +190,7 @@ app.post('/api/chat', async (req, res) => {
           error: 'OpenAI API key not configured'
         });
       }
-      result = await callOpenAI(message, conversationHistory, planMode);
+      result = await callOpenAI(message, conversationHistory, planMode, model);
     }
     
     res.json(result);
@@ -343,7 +351,7 @@ Please be thorough and provide examples for each section.`,
 
 // Temperature comparison endpoint
 app.post('/api/compare-temperatures', async (req, res) => {
-  const { message } = req.body;
+  const { message, model = 'gpt-4o' } = req.body;
   
   if (!message || message.trim() === '') {
     return res.status(400).json({
@@ -370,11 +378,18 @@ app.post('/api/compare-temperatures', async (req, res) => {
     // Run the same prompt with three different temperatures in parallel
     const temperatures = [0, 0.7, 1.2];
     
+    const modelNames = {
+      'gpt-4o': 'GPT-4o',
+      'gpt-4-turbo': 'GPT-4 Turbo',
+      'gpt-4': 'GPT-4',
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo'
+    };
+    
     const promises = temperatures.map(temp => 
       axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
-          model: 'gpt-4o',
+          model: model,
           messages: [
             {
               role: 'system',
@@ -411,7 +426,7 @@ app.post('/api/compare-temperatures', async (req, res) => {
       success: true,
       prompt: message,
       results: results,
-      provider: 'OpenAI GPT-4o'
+      provider: `OpenAI ${modelNames[model] || model}`
     });
   } catch (error) {
     console.error('Temperature Comparison Error:', error.response?.data || error.message);
